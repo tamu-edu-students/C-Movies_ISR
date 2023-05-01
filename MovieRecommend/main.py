@@ -29,6 +29,10 @@ def create_similarity():
     return data, similarity
 
 
+def getTopRankedMovies():
+    return
+
+
 def rcmd(m):
     m = m.lower()
     try:
