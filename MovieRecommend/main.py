@@ -11,6 +11,7 @@ import pickle
 import requests
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
+from ranking import *
 
 # load the nlp model and tfidf vectorizer from disk
 filename = 'nlp_model.pkl'
