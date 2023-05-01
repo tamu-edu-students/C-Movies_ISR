@@ -119,6 +119,7 @@ function show_details(movie_details, arr, movie_title, my_api_key, movie_id) {
   for (var genre in genres) {
     genre_list.push(genres[genre].name);
   }
+
   var my_genre = genre_list.join(", ");
   if (runtime % 60 == 0) {
     runtime = Math.floor(runtime / 60) + " hour(s)"

@@ -1,18 +1,22 @@
 import numpy as np
 import pandas as pd
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, session
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import re
 import json
 import bs4 as bs
 import urllib.request
 import pickle
 import requests
+from flask_mysqldb import MySQL
+import MySQLdb.cursors
 
 # load the nlp model and tfidf vectorizer from disk
 filename = 'nlp_model.pkl'
 clf = pickle.load(open(filename, 'rb'))
-vectorizer = pickle.load(open('tranform.pkl','rb'))
+vectorizer = pickle.load(open('tranform.pkl', 'rb'))
+
 
 def create_similarity():
     data = pd.read_csv('main_data.csv')
@@ -21,7 +25,8 @@ def create_similarity():
     count_matrix = cv.fit_transform(data['comb'])
     # creating a similarity score matrix
     similarity = cosine_similarity(count_matrix)
-    return data,similarity
+    return data, similarity
+
 
 def rcmd(m):
     m = m.lower()
@@ -31,48 +36,164 @@ def rcmd(m):
     except:
         data, similarity = create_similarity()
     if m not in data['movie_title'].unique():
-        return('Sorry! The movie you requested is not in our database. Please check the spelling or try with some other movies')
+        return ('Sorry! The movie you requested is not in our database. Please check the spelling or try with some other movies')
     else:
-        i = data.loc[data['movie_title']==m].index[0]
+        i = data.loc[data['movie_title'] == m].index[0]
         lst = list(enumerate(similarity[i]))
-        lst = sorted(lst, key = lambda x:x[1] ,reverse=True)
-        lst = lst[1:11] # excluding first item since it is the requested movie itself
+        lst = sorted(lst, key=lambda x: x[1], reverse=True)
+        # excluding first item since it is the requested movie itself
+        lst = lst[1:11]
         l = []
         for i in range(len(lst)):
             a = lst[i][0]
             l.append(data['movie_title'][a])
         return l
-    
+
 # converting list of string to list (eg. "["abc","def"]" to ["abc","def"])
+
+
 def convert_to_list(my_list):
     my_list = my_list.split('","')
-    my_list[0] = my_list[0].replace('["','')
-    my_list[-1] = my_list[-1].replace('"]','')
+    my_list[0] = my_list[0].replace('["', '')
+    my_list[-1] = my_list[-1].replace('"]', '')
     return my_list
+
 
 def get_suggestions():
     data = pd.read_csv('main_data.csv')
     return list(data['movie_title'].str.capitalize())
 
-app = Flask(__name__)
 
-@app.route("/")
+app = Flask(__name__)
+# Change this to your secret key (can be anything, it's for extra protection)
+app.secret_key = 'secret'
+
+# Enter your database connection details below
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'ABCabc123$#@'
+app.config['MYSQL_DB'] = 'login_database'
+
+# Intialize MySQL
+mysql = MySQL(app)
+
+
+# @app.route("/")
 @app.route("/home")
 def home():
     suggestions = get_suggestions()
-    return render_template('home.html',suggestions=suggestions)
+    if 'loggedin' in session:
+        # User is loggedin show them the home page
+        return render_template('home.html', suggestions=suggestions, username=session['username'])
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
 
-@app.route("/similarity",methods=["POST"])
+
+@app.route("/", methods=['GET', 'POST'])
+def login():
+    # Output message if something goes wrong...
+    msg = ''
+    # Check if "username" and "password" POST requests exist (user submitted form)
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        # Create variables for easy access
+        username = request.form['username']
+        password = request.form['password']
+        # Check if account exists using MySQL
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            'SELECT * FROM users WHERE username = %s AND password = %s', (username, password,))
+        # Fetch one record and return result
+        account = cursor.fetchone()
+        # If account exists in accounts table in out database
+        if account:
+            # Create session data, we can access this data in other routes
+            session['loggedin'] = True
+            session['id'] = account['id']
+            session['username'] = account['username']
+            # Redirect to home page
+            # return 'Logged in successfully!'
+            return redirect(url_for('home'))
+        else:
+            # Account doesnt exist or username/password incorrect
+            msg = 'Incorrect username/password!'
+    # Show the login form with message (if any)
+    return render_template('index.html', msg='')
+
+
+@app.route('/logout')
+def logout():
+    # Remove session data, this will log the user out
+    session.pop('loggedin', None)
+    session.pop('id', None)
+    session.pop('username', None)
+    # Redirect to login page
+    return redirect(url_for('login'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    msg = ''
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:
+        # Create variables for easy access
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+
+        # Check if account exists using MySQL
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute(
+            'SELECT * FROM users WHERE username = %s', (username,))
+        account = cursor.fetchone()
+        # If account exists show error and validation checks
+        if account:
+            msg = 'Account already exists!'
+        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+            msg = 'Invalid email address!'
+        elif not re.match(r'[A-Za-z0-9]+', username):
+            msg = 'Username must contain only characters and numbers!'
+        elif not username or not password or not email:
+            msg = 'Please fill out the form!'
+        else:
+            # Account doesnt exists and the form data is valid, now insert new account into accounts table
+            cursor.execute(
+                'INSERT INTO users VALUES (NULL, %s, %s, %s)', (username, password, email,))
+            mysql.connection.commit()
+            msg = 'You have successfully registered!'
+    elif request.method == 'POST':
+        # Form is empty... (no POST data)
+        msg = 'Please fill out the form!'
+    # Show registration form with message (if any)
+    return render_template('register.html', msg=msg)
+
+# http://localhost:5000/pythinlogin/profile - this will be the profile page, only accessible for loggedin users
+
+
+@app.route('/profile')
+def profile():
+    # Check if user is loggedin
+    if 'loggedin' in session:
+        # We need all the account info for the user so we can display it on the profile page
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE id = %s', (session['id'],))
+        account = cursor.fetchone()
+        # Show the profile page with account info
+        return render_template('profile.html', username=account['username'], email=account['email'])
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
+
+
+@app.route("/similarity", methods=["POST"])
 def similarity():
     movie = request.form['name']
     rc = rcmd(movie)
-    if type(rc)==type('string'):
+    if type(rc) == type('string'):
         return rc
     else:
-        m_str="---".join(rc)
+        m_str = "---".join(rc)
         return m_str
 
-@app.route("/recommend",methods=["POST"])
+
+@app.route("/recommend", methods=["POST"])
 def recommend():
     # getting data from AJAX request
     title = request.form['title']
@@ -107,30 +228,34 @@ def recommend():
     cast_bdays = convert_to_list(cast_bdays)
     cast_bios = convert_to_list(cast_bios)
     cast_places = convert_to_list(cast_places)
-    
+
     # convert string to list (eg. "[1,2,3]" to [1,2,3])
     cast_ids = cast_ids.split(',')
-    cast_ids[0] = cast_ids[0].replace("[","")
-    cast_ids[-1] = cast_ids[-1].replace("]","")
-    
+    cast_ids[0] = cast_ids[0].replace("[", "")
+    cast_ids[-1] = cast_ids[-1].replace("]", "")
+
     # rendering the string to python string
     for i in range(len(cast_bios)):
-        cast_bios[i] = cast_bios[i].replace(r'\n', '\n').replace(r'\"','\"')
-    
-    # combining multiple lists as a dictionary which can be passed to the html file so that it can be processed easily and the order of information will be preserved
-    movie_cards = {rec_posters[i]: rec_movies[i] for i in range(len(rec_posters))}
-    
-    casts = {cast_names[i]:[cast_ids[i], cast_chars[i], cast_profiles[i]] for i in range(len(cast_profiles))}
+        cast_bios[i] = cast_bios[i].replace(r'\n', '\n').replace(r'\"', '\"')
 
-    cast_details = {cast_names[i]:[cast_ids[i], cast_profiles[i], cast_bdays[i], cast_places[i], cast_bios[i]] for i in range(len(cast_places))}
+    # combining multiple lists as a dictionary which can be passed to the html file so that it can be processed easily and the order of information will be preserved
+    movie_cards = {rec_posters[i]: rec_movies[i]
+                   for i in range(len(rec_posters))}
+
+    casts = {cast_names[i]: [cast_ids[i], cast_chars[i],
+                             cast_profiles[i]] for i in range(len(cast_profiles))}
+
+    cast_details = {cast_names[i]: [cast_ids[i], cast_profiles[i], cast_bdays[i],
+                                    cast_places[i], cast_bios[i]] for i in range(len(cast_places))}
 
     # web scraping to get user reviews from IMDB site
-    sauce = urllib.request.urlopen('https://www.imdb.com/title/{}/reviews?ref_=tt_ov_rt'.format(imdb_id)).read()
-    soup = bs.BeautifulSoup(sauce,'lxml')
-    soup_result = soup.find_all("div",{"class":"text show-more__control"})
+    sauce = urllib.request.urlopen(
+        'https://www.imdb.com/title/{}/reviews?ref_=tt_ov_rt'.format(imdb_id)).read()
+    soup = bs.BeautifulSoup(sauce, 'lxml')
+    soup_result = soup.find_all("div", {"class": "text show-more__control"})
 
-    reviews_list = [] # list of reviews
-    reviews_status = [] # list of comments (good or bad)
+    reviews_list = []  # list of reviews
+    reviews_status = []  # list of comments (good or bad)
     for reviews in soup_result:
         if reviews.string:
             reviews_list.append(reviews.string)
@@ -141,12 +266,14 @@ def recommend():
             reviews_status.append('Good' if pred else 'Bad')
 
     # combining reviews and comments into a dictionary
-    movie_reviews = {reviews_list[i]: reviews_status[i] for i in range(len(reviews_list))}     
+    movie_reviews = {reviews_list[i]: reviews_status[i]
+                     for i in range(len(reviews_list))}
 
     # passing all the data to the html file
-    return render_template('recommend.html',title=title,poster=poster,overview=overview,vote_average=vote_average,
-        vote_count=vote_count,release_date=release_date,runtime=runtime,status=status,genres=genres,
-        movie_cards=movie_cards,reviews=movie_reviews,casts=casts,cast_details=cast_details)
+    return render_template('recommend.html', title=title, poster=poster, overview=overview, vote_average=vote_average,
+                           vote_count=vote_count, release_date=release_date, runtime=runtime, status=status, genres=genres,
+                           movie_cards=movie_cards, reviews=movie_reviews, casts=casts, cast_details=cast_details)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
