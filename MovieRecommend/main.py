@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
@@ -68,7 +68,7 @@ def get_suggestions():
     return list(data['movie_title'].str.capitalize())
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 # Change this to your secret key (can be anything, it's for extra protection)
 app.secret_key = 'secret'
 
@@ -190,18 +190,15 @@ def profile():
 def personlisedRanking():
     movie = request.form.get('searchName')
     bmResult = getTopRankedMovies(movie)
-    # print("bmResult", bmResult)
     bmResult = bmResult.head(10)[['title', 'id']]
-
-    for val in bmResult['id']:
-        image_file = open("/static/posters/" + str(val)+".jpg", 'rb')
-    # print("result is", bmResult)
-    # bmResult['poster'] = bmResult['id'].apply(lambda x: getImage(x))
-    # bmResult['poster'] = ["/static/posters/" +
-    #                       str(val)+".jpg" for val in bmResult['id']]
-    # print(bmResult)
-    # data = tuple(row.to_json() for index, row in bmResult.iterrows())
-    return bmResult.to_json()
+    movielist = []
+    for index, row in bmResult.iterrows():
+        image_path = "posters/" + str(row['id'])+'.jpg'
+        tempdict = {}
+        tempdict['title'] = row['title']
+        tempdict['poster'] = image_path
+        movielist.append(tempdict)
+    return render_template('bmrank.html', items=movielist)
 
 
 def getImage(id):
