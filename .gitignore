@@ -91,3 +91,7 @@ local_settings.py
 
 .env
 db.sqlite3
+
+
+datasets/DataWithPosters.csv
+static/posters/
