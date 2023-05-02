@@ -201,22 +201,6 @@ def personlisedRanking():
     return render_template('bmrank.html', items=movielist)
 
 
-def getImage(id):
-    # API_KEY = "270270948898f73f4cc3bd80e8778c3d"
-    # # Make the request to the TMDb API to retrieve the movie details
-    # response = requests.get(
-    #     f"https://api.themoviedb.org/3/movie/{id}?api_key={API_KEY}&language=en-US")
-    # if response.status_code != 200:
-    #     exit()
-    # poster_path = response.json().get("poster_path")
-    # if not poster_path:
-    #     exit()
-    # response = requests.get(
-    #     f"https://image.tmdb.org/t/p/original{poster_path}")
-
-    return
-
-
 @ app.route("/similarity", methods=["POST"])
 def similarity():
     movie = request.form['name']

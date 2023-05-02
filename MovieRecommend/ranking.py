@@ -18,6 +18,8 @@ import math
 
 import itertools
 
+import difflib
+
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 filteredData = []
@@ -126,18 +128,45 @@ def convert_to_df(list_of_songs):
     return df
 
 
+# def return_matching_songs(query, search_token_song_map):
+#     song_ids = set()
+#     result_song_ids = set()
+#     query_words = query.split(" ")
+#     flag = True
+#     for query_word in query_words:
+#         if flag:
+#             song_ids.update(search_token_song_map[query_word])
+#             flag = False
+#         else:
+#             song_ids = song_ids.intersection(search_token_song_map[query_word])
+#     song_ids = sorted(song_ids)
+#     df = convert_to_df(song_ids)
+#     return df
+
+
 def return_matching_songs(query, search_token_song_map):
     song_ids = set()
-    result_song_ids = set()
     query_words = query.split(" ")
     flag = True
+#   print(search_token_song_map)
     for query_word in query_words:
+        if query_word not in search_token_song_map.keys():
+            query_word_new = difflib.get_close_matches(
+                query_word, search_token_song_map.keys())[0]
+            search_token_song_map[query_word] = search_token_song_map[query_word_new]
+            query_word = query_word_new
         if flag:
-            song_ids.update(search_token_song_map[query_word])
-            flag = False
+            try:
+                song_ids.update(search_token_song_map[query_word])
+                flag = False
+            except:
+                print("No such words")
         else:
             song_ids = song_ids.intersection(search_token_song_map[query_word])
     song_ids = sorted(song_ids)
+    # set_list = list(song_ids)
+    # df = pd.DataFrame(set_list, columns = ['song'] )
+    # df['Rank'] = range(1, len(set_list) + 1)
     df = convert_to_df(song_ids)
     return df
 
@@ -306,6 +335,7 @@ def calc_bm25_score(tf, avgdl, D, query, map, N):
 def return_five_matching_songs_with_bm25(query, data):
     lemmatize_and_remove_background_tokens_part3 = list_of_tokens(data)
     boolean_search_index_map_part3 = build_index_token_map(data)
+
     avgdl = calc_all_docs_magnitude_basis_on_idf(
         data, boolean_search_index_map_part3)
     total_docs = len(data)
@@ -324,6 +354,13 @@ def return_five_matching_songs_with_bm25(query, data):
         score_bm25 = 0
         user_query_dict = get_query_dict(query)
         for query_word, freq in user_query_dict.items():
+            # print(query_word)
+            if query_word not in boolean_search_index_map_part3.keys():
+                query_word_new = difflib.get_close_matches(
+                    query_word, boolean_search_index_map_part3.keys())[0]
+                boolean_search_index_map_part3[query_word] = boolean_search_index_map_part3[query_word_new]
+                query_word = query_word_new
+            # print(query_word)
             number_of_documents_with_query_word = len(
                 boolean_search_index_map_part3[query_word])
             term_freq_in_cur_doc = 0
