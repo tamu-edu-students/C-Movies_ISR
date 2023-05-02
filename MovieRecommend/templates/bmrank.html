@@ -8,12 +8,83 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
 </head>
 
-<body id="content">
-    <button class="btn btn-primary btn-block movie-button"
-        style="background-color: #e50914;text-align: center;border-color: #e50914;width:120px; margin-left: 0%; opacity: 100;"
-        disabled="true"><a href="{{ url_for('logout') }}" style="color: white;">Log Out</a></button>
-    <center>
-        <h1 style="font-size: 50px;">Top Recommendations</h1>
-    </center>
+<style>
+    body {
+        background-color: black;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+    }
 
+    .movie-button {
+        background-color: #e50914;
+        border-color: #e50914;
+        color: white;
+        margin-left: 0%;
+        opacity: 100;
+        text-align: center;
+        width: 120px;
+    }
+
+    .movie-button a {
+        color: white;
+    }
+
+    h1 {
+        font-size: 50px;
+    }
+
+    table {
+        border-collapse: collapse;
+        margin-top: 50px;
+        width: 100%;
+    }
+
+    td {
+        padding: 10px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 200px;
+        height: 300px;
+    }
+
+    .scrollable {
+        height: 400px;
+        overflow: auto;
+    }
+</style>
+
+<body id="content">
+    <button class="btn btn-primary btn-block movie-button" disabled="true">
+        <a href="{{ url_for('logout') }}">Log Out</a>
+    </button>
+    <button class="btn btn-primary btn-block movie-button" disabled="true">
+        <a href="{{ url_for('profile') }}">Back</a>
+    </button>
+    <center>
+        <h1>Top Recommendations</h1>
+    </center>
+    <div>
+
+        <div class="scrollable">
+            <table>
+                <tbody>
+                    <tr>
+                        {% for row in items %}
+                        <td>
+                            <h2>{{ row.title }}</h2>
+                            <img src="{{ url_for('static', filename=row.poster) }}">
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
