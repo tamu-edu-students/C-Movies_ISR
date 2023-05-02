@@ -8,29 +8,30 @@ import json
 import bs4 as bs
 import urllib.request
 import pickle
+import ssl
 import requests
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
-from ranking import *
+from ranking import bm25_search
 
-# load the nlp model and tfidf vectorizer from disk
+ssl._create_default_https_context = ssl._create_unverified_context
 filename = 'nlp_model.pkl'
 clf = pickle.load(open(filename, 'rb'))
 vectorizer = pickle.load(open('tranform.pkl', 'rb'))
 
 
 def create_similarity():
-    data = pd.read_csv('main_data.csv')
-    # creating a count matrix
+    data = pd.read_csv(
+        '/Users/anudeepika/Documents/ISR_project/C-Movies_ISR/MovieRecommend/datasets/main_data.csv')
     cv = CountVectorizer()
     count_matrix = cv.fit_transform(data['comb'])
-    # creating a similarity score matrix
     similarity = cosine_similarity(count_matrix)
     return data, similarity
 
 
-def getTopRankedMovies():
-    return
+def getTopRankedMovies(userQuery):
+    list = bm25_search(userQuery)
+    return list
 
 
 def rcmd(m):
@@ -46,15 +47,12 @@ def rcmd(m):
         i = data.loc[data['movie_title'] == m].index[0]
         lst = list(enumerate(similarity[i]))
         lst = sorted(lst, key=lambda x: x[1], reverse=True)
-        # excluding first item since it is the requested movie itself
         lst = lst[1:11]
         l = []
         for i in range(len(lst)):
             a = lst[i][0]
             l.append(data['movie_title'][a])
         return l
-
-# converting list of string to list (eg. "["abc","def"]" to ["abc","def"])
 
 
 def convert_to_list(my_list):
@@ -65,7 +63,8 @@ def convert_to_list(my_list):
 
 
 def get_suggestions():
-    data = pd.read_csv('main_data.csv')
+    data = pd.read_csv(
+        '/Users/anudeepika/Documents/ISR_project/C-Movies_ISR/MovieRecommend/datasets/main_data.csv')
     return list(data['movie_title'].str.capitalize())
 
 
@@ -187,10 +186,45 @@ def profile():
     return redirect(url_for('login'))
 
 
-@app.route("/similarity", methods=["POST"])
+@app.route("/bmrank", methods=["GET", "POST"])
+def personlisedRanking():
+    movie = request.form.get('searchName')
+    bmResult = getTopRankedMovies(movie)
+    # print("bmResult", bmResult)
+    bmResult = bmResult.head(10)[['title', 'id']]
+
+    for val in bmResult['id']:
+        image_file = open("/static/posters/" + str(val)+".jpg", 'rb')
+    # print("result is", bmResult)
+    # bmResult['poster'] = bmResult['id'].apply(lambda x: getImage(x))
+    # bmResult['poster'] = ["/static/posters/" +
+    #                       str(val)+".jpg" for val in bmResult['id']]
+    # print(bmResult)
+    # data = tuple(row.to_json() for index, row in bmResult.iterrows())
+    return bmResult.to_json()
+
+
+def getImage(id):
+    # API_KEY = "270270948898f73f4cc3bd80e8778c3d"
+    # # Make the request to the TMDb API to retrieve the movie details
+    # response = requests.get(
+    #     f"https://api.themoviedb.org/3/movie/{id}?api_key={API_KEY}&language=en-US")
+    # if response.status_code != 200:
+    #     exit()
+    # poster_path = response.json().get("poster_path")
+    # if not poster_path:
+    #     exit()
+    # response = requests.get(
+    #     f"https://image.tmdb.org/t/p/original{poster_path}")
+
+    return
+
+
+@ app.route("/similarity", methods=["POST"])
 def similarity():
     movie = request.form['name']
     rc = rcmd(movie)
+    # print("rc", rc)
     if type(rc) == type('string'):
         return rc
     else:
@@ -198,7 +232,7 @@ def similarity():
         return m_str
 
 
-@app.route("/recommend", methods=["POST"])
+@ app.route("/recommend", methods=["POST"])
 def recommend():
     # getting data from AJAX request
     title = request.form['title']
