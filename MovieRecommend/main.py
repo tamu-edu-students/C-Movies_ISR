@@ -1,10 +1,11 @@
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
-import json
 import bs4 as bs
 import urllib.request
 import pickle
@@ -21,10 +22,11 @@ vectorizer = pickle.load(open('tranform.pkl', 'rb'))
 
 
 def create_similarity():
-    data = pd.read_csv(
-        '/Users/anudeepika/Documents/ISR_project/C-Movies_ISR/MovieRecommend/datasets/main_data.csv')
+    data = pd.read_csv('main_data.csv')
+    # creating a count matrix
     cv = CountVectorizer()
     count_matrix = cv.fit_transform(data['comb'])
+    # creating a similarity score matrix
     similarity = cosine_similarity(count_matrix)
     return data, similarity
 
@@ -47,12 +49,15 @@ def rcmd(m):
         i = data.loc[data['movie_title'] == m].index[0]
         lst = list(enumerate(similarity[i]))
         lst = sorted(lst, key=lambda x: x[1], reverse=True)
+        # excluding first item since it is the requested movie itself
         lst = lst[1:11]
         l = []
         for i in range(len(lst)):
             a = lst[i][0]
             l.append(data['movie_title'][a])
         return l
+
+# converting list of string to list (eg. "["abc","def"]" to ["abc","def"])
 
 
 def convert_to_list(my_list):
@@ -63,8 +68,7 @@ def convert_to_list(my_list):
 
 
 def get_suggestions():
-    data = pd.read_csv(
-        '/Users/anudeepika/Documents/ISR_project/C-Movies_ISR/MovieRecommend/datasets/main_data.csv')
+    data = pd.read_csv('main_data.csv')
     return list(data['movie_title'].str.capitalize())
 
 
@@ -75,12 +79,23 @@ app.secret_key = 'secret'
 # Enter your database connection details below
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'ABCabc123$#@'
-app.config['MYSQL_DB'] = 'login_database'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'cmovies'
 
 # Intialize MySQL
 mysql = MySQL(app)
 
+
+def csvToDB(tableName,csvPath):
+    df = pd.read_csv(csvPath)
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    for row in df:
+        cursor.execute('INSERT INTO %s(movieA, \
+              movieB, score)' \
+                       'VALUES("%s", "%s", "%s")',
+                       (tableName,row))
+
+#csvToDB("cosinescores","MovieRecommend/datasets/books.csv")
 
 # @app.route("/")
 @app.route("/home")
@@ -212,6 +227,10 @@ def similarity():
         m_str = "---".join(rc)
         return m_str
 
+@app.route("/done", methods=["POST"])
+def done():
+    return render_template('recommend.html')
+
 
 @ app.route("/recommend", methods=["POST"])
 def recommend():
@@ -293,6 +312,74 @@ def recommend():
     return render_template('recommend.html', title=title, poster=poster, overview=overview, vote_average=vote_average,
                            vote_count=vote_count, release_date=release_date, runtime=runtime, status=status, genres=genres,
                            movie_cards=movie_cards, reviews=movie_reviews, casts=casts, cast_details=cast_details)
+
+
+
+@app.route("/submit", methods=["POST"])
+def myfunction():
+    if 'loggedin' in session:
+        # We need all the account info for the user so we can display it on the profile page
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE id = %s', (session['id'],))
+        account = cursor.fetchone()
+        print(account)
+
+        user_id = str(account['id'])
+        movieIds = request.form.getlist('ids')
+
+
+        for movie_id in movieIds:
+            movie_id = str(movie_id)
+            query = "SELECT CREATED_AT FROM userpreference WHERE userID = %s AND movieID = %s"
+            cursor.execute(query, (user_id, movie_id))
+            result = cursor.fetchone()
+
+            if result:
+                # Rating exists, so delete it from the database
+                query = "DELETE FROM userpreference WHERE userID = %s AND movieID = %s"
+                cursor.execute(query, (user_id, movie_id))
+            else:
+                # Rating doesn't exist, so add it to the database
+                timestamp = datetime.now()
+                query = "INSERT INTO userpreference (userID, movieID, CREATED_AT) VALUES (%s, %s, %s)"
+                cursor.execute(query, (user_id, movie_id, timestamp))
+
+        suggestions = fetchRecords(user_id)
+        print(suggestions)
+        movielist = []
+        for index in suggestions:
+            image_path = "posters/" + str(index) + '.jpg'
+            tempdict = {}
+            #tempdict['title'] = row['title']
+            tempdict['poster'] = image_path
+            movielist.append(tempdict)
+        return render_template('suggestions.html', items=movielist)
+
+def fetchRecords(user_id):
+    print("Here",user_id)
+    query = "SELECT movieID FROM userpreference WHERE userID = %s ORDER BY CREATED_AT DESC LIMIT 2"
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(query,user_id)
+    result = cursor.fetchall()
+
+    listOfMovies = []
+    for i in result:
+        i = str(i['movieID'])
+        #search = "SELECT tmp.MovieID, tmp.Score FROM ( SELECT movieA as MovieID, score as Score FROM cosinescores WHERE movieB = %s UNION SELECT movieB as MovieID, score as Score FROM cosinescores WHERE movieA = %s ) AS tmp " \
+        "JOIN (SELECT MAX(score) as max_score FROM ( SELECT score FROM cosinescores WHERE movieA = %s OR movieB = %s ORDER BY score DESC LIMIT 5) AS max_scores) AS max_scores WHERE tmp.Score >= max_scores.max_score ORDER BY tmp.Score DESC LIMIT 5;"
+        search = "select tmp.MovieID, tmp.Score from (select movieA as MovieID, score as Score from cosinescores where movieB = %s union select movieB as MovieID, score as Score from cosinescores where movieA = %s ) tmp order by tmp.Score DESC LIMIT 5;"
+        cursor.execute(search, (i,i))
+        print(i)
+        movieIds = cursor.fetchall()
+        print(movieIds)
+        listOfMovies.append(movieIds[0]['MovieID'])
+        listOfMovies.append(movieIds[1]['MovieID'])
+        listOfMovies.append(movieIds[2]['MovieID'])
+        listOfMovies.append(movieIds[3]['MovieID'])
+        listOfMovies.append(movieIds[4]['MovieID'])
+
+    print(listOfMovies)
+    return listOfMovies
 
 
 if __name__ == '__main__':

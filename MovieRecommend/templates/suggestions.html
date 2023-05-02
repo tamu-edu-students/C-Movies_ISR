@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Suggested Movies </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
+</head>
+
+<style>
+    body {
+        background-color: black;
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+    }
+
+    .movie-button {
+        background-color: #e50914;
+        border-color: #e50914;
+        color: white;
+        margin-left: 0%;
+        opacity: 100;
+        text-align: center;
+        width: 120px;
+    }
+
+    .movie-button a {
+        color: white;
+    }
+
+    h1 {
+        font-size: 50px;
+    }
+
+    table {
+        border-collapse: collapse;
+        margin-top: 50px;
+        width: 100%;
+    }
+
+    td {
+        padding: 10px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 200px;
+        height: 300px;
+    }
+
+    .scrollable {
+        height: 400px;
+        overflow: auto;
+    }
+</style>
+
+<body id="content">
+    <button class="btn btn-primary btn-block movie-button" disabled="true">
+        <a href="{{ url_for('logout') }}">Log Out</a>
+    </button>
+    <button class="btn btn-primary btn-block movie-button" disabled="true">
+        <a href="{{ url_for('profile') }}">Back to Profile</a>
+    </button>
+    <center>
+        <h1>Top Recommendations</h1>
+    </center>
+    <div>
+
+        <div class="scrollable">
+            <table>
+                <tbody>
+                    <tr>
+                        {% for row in items %}
+                        <td>
+                            <img src="{{ url_for('static', filename=row.poster) }}">
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
