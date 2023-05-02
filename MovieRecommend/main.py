@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, session
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
@@ -22,7 +22,7 @@ vectorizer = pickle.load(open('tranform.pkl', 'rb'))
 
 def create_similarity():
     data = pd.read_csv(
-        '/Users/anudeepika/Documents/ISR_project/C-Movies_ISR/MovieRecommend/datasets/main_data.csv')
+        'datasets/main_data.csv')
     cv = CountVectorizer()
     count_matrix = cv.fit_transform(data['comb'])
     similarity = cosine_similarity(count_matrix)
@@ -64,19 +64,19 @@ def convert_to_list(my_list):
 
 def get_suggestions():
     data = pd.read_csv(
-        '/Users/anudeepika/Documents/ISR_project/C-Movies_ISR/MovieRecommend/datasets/main_data.csv')
+        'datasets/main_data.csv')
     return list(data['movie_title'].str.capitalize())
 
 
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__)
 # Change this to your secret key (can be anything, it's for extra protection)
 app.secret_key = 'secret'
 
 # Enter your database connection details below
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'ABCabc123$#@'
-app.config['MYSQL_DB'] = 'login_database'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'cmovies'
 
 # Intialize MySQL
 mysql = MySQL(app)
@@ -190,31 +190,18 @@ def profile():
 def personlisedRanking():
     movie = request.form.get('searchName')
     bmResult = getTopRankedMovies(movie)
+    # print("bmResult", bmResult)
     bmResult = bmResult.head(10)[['title', 'id']]
-    movielist = []
-    for index, row in bmResult.iterrows():
-        image_path = "posters/" + str(row['id'])+'.jpg'
-        tempdict = {}
-        tempdict['title'] = row['title']
-        tempdict['poster'] = image_path
-        movielist.append(tempdict)
-    return render_template('bmrank.html', items=movielist)
 
-
-def getImage(id):
-    # API_KEY = "270270948898f73f4cc3bd80e8778c3d"
-    # # Make the request to the TMDb API to retrieve the movie details
-    # response = requests.get(
-    #     f"https://api.themoviedb.org/3/movie/{id}?api_key={API_KEY}&language=en-US")
-    # if response.status_code != 200:
-    #     exit()
-    # poster_path = response.json().get("poster_path")
-    # if not poster_path:
-    #     exit()
-    # response = requests.get(
-    #     f"https://image.tmdb.org/t/p/original{poster_path}")
-
-    return
+    for val in bmResult['id']:
+        image_file = open("static/posters/" + str(val)+".jpg", 'rb')
+    # print("result is", bmResult)
+    # bmResult['poster'] = bmResult['id'].apply(lambda x: getImage(x))
+    # bmResult['poster'] = ["/static/posters/" +
+    #                       str(val)+".jpg" for val in bmResult['id']]
+    # print(bmResult)
+    # data = tuple(row.to_json() for index, row in bmResult.iterrows())
+    return bmResult.to_json()
 
 
 @ app.route("/similarity", methods=["POST"])

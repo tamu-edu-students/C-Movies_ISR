@@ -35,6 +35,76 @@
         </div> -->
     </div>
 
+<h6 id="posterRecommendation" style="color:white;">POSTER RECOMMENDATIONS<span id="dots">:</span> <button class="card-btn btn btn-danger"
+            onclick="myFunction()" id="myBtn">Read Less</button></h6>
+    <div class="scrolling-wrapper">
+     <div class="recommend">
+      
+      <div class="card" style="width: 15rem;margin-right: 3%;">
+        <div class="imghvr">
+          <img class="card-img-top" height="360" width="240" id="100" src="{{ url_for('static', filename='posters/100.jpg') }}">
+          <figcaption class="fig">
+            <!-- <button class="card-btn btn btn-danger"> <a href="{{ url_for('logout') }}" >Click Me</a> </button> -->
+            <input type="submit" name="100">Click Me
+          </figcaption>
+        </div>
+      </div>
+
+      <div class="card" style="width: 15rem;margin-right: 3%;" onclick="">
+        <div class="imghvr">
+          <img class="card-img-top" height="360" width="240" id="9286" src="{{ url_for('static', filename='posters/9286.jpg') }}" >
+          <figcaption class="fig">
+            <button class="card-btn btn btn-danger"> Click Me </button>
+          </figcaption>
+        </div>
+      </div>
+
+
+    <!--   <div class="card" style="width: 15rem;margin-right: 3%;"  onclick="">
+        <div class="imghvr">
+          <img class="card-img-top" height="360" width="240" id="15849" src="{{ url_for('static', filename='posters/15849.jpg') }}" >
+          <figcaption class="fig">
+            <button class="card-btn btn btn-danger"> Click Me </button>
+          </figcaption>
+        </div>
+      </div>
+
+      <div class="card" style="width: 15rem;margin-right: 3%;" onclick="">
+        <div class="imghvr">
+          <img class="card-img-top" height="360" width="240" id="25842" src="{{ url_for('static', filename='posters/25842.jpg') }}" >
+          <figcaption class="fig">
+            <button class="card-btn btn btn-danger"> Click Me </button>
+          </figcaption>
+        </div>
+      </div>
+
+      <div class="card" style="width: 15rem;margin-right: 3%;"  onclick="">
+        <div class="imghvr">
+          <img class="card-img-top" height="360" width="240" id="862" src="{{ url_for('static', filename='posters/862.jpg') }}" >
+          <figcaption class="fig">
+            <button class="card-btn btn btn-danger"> Click Me </button>
+          </figcaption>
+        </div>
+      </div> -->
+     
+    </div>
+  </div>
+ <script>
+    function myFunction() {
+      var dots = document.getElementById("dots");
+      var moreText = document.getElementById("more");
+      var btnText = document.getElementById("myBtn");
+
+      if (dots.style.display === "none") {
+        dots.style.display = "inline";
+        btnText.innerHTML = "Read more";
+        moreText.style.display = "none";
+      } else {
+        dots.style.display = "none";
+        btnText.innerHTML = "Read less";
+        moreText.style.display = "inline";
+      }
+    }</script>
     <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/js/autoComplete.min.js"></script>
     <script type="text/javascript" src="{{url_for('static', filename='autocomplete.js')}}"></script>
 
