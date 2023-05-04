@@ -3,6 +3,7 @@
 
 <head>
   <title>C-movies</title>
+<!--  <link rel="stylesheet" href="{{ url_for('myfunction', filename='style.css') }}">-->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -46,6 +47,7 @@
     <center>
       <h1> C-Movies</h1>
     </center>
+    
     <div class="form-group shadow-textarea" style="margin-top: 30px;text-align: center;color: white;">
       <input type="text" name="movie" class="movie form-control" id="autoComplete" autocomplete="off"
         placeholder="Enter the Movie Name"
@@ -65,6 +67,7 @@
       <input id="upload" type="submit" class="btn btn-primary btn-block movie-button"
         style="background-color: #e50914;text-align: center;border-color: #e50914;width:120px;"></button><br><br>
     </form>
+
 
   </div>
   </div>
@@ -119,6 +122,112 @@
         })
     })
   </script>
+
+<!--style>-->
+<!--    body {-->
+<!--        background-color: black;-->
+<!--        color: white;-->
+<!--        font-family: Arial, sans-serif;-->
+<!--        font-size: 16px;-->
+<!--    }-->
+
+<!--    .movie-button {-->
+<!--        background-color: #e50914;-->
+<!--        border-color: #e50914;-->
+<!--        color: white;-->
+<!--        margin-left: 0%;-->
+<!--        opacity: 100;-->
+<!--        text-align: center;-->
+<!--        width: 120px;-->
+<!--    }-->
+
+<!--    .movie-button a {-->
+<!--        color: white;-->
+<!--    }-->
+
+<!--    h1 {-->
+<!--        font-size: 50px;-->
+<!--    }-->
+
+<!--    table {-->
+<!--        border-collapse: collapse;-->
+<!--        margin-top: 50px;-->
+<!--        width: 100%;-->
+<!--    }-->
+
+<!--    td {-->
+<!--        padding: 10px;-->
+<!--        text-align: center;-->
+<!--        vertical-align: middle;-->
+<!--    }-->
+
+<!--    img {-->
+<!--        display: block;-->
+<!--        margin-left: auto;-->
+<!--        margin-right: auto;-->
+<!--        width: 200px;-->
+<!--        height: 300px;-->
+<!--    }-->
+
+<!--    .scrollable {-->
+<!--        height: 400px;-->
+<!--        overflow: auto;-->
+<!--    }-->
+<!--</style>-->
+<style>
+  ul#menu li {
+  display:inline;
+}
+</style>
+  <div>
+    <h1>Select Posters to begin Recommendation</h1>
+    <form method="POST" action="/submit">
+      <ul id = "menu">
+        <li>
+          <img height="360" width="240" src="static/posters/25842.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="25842">
+        </li>
+        <li>
+          <img height="360" width="240" src="static/posters/675.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="675">
+        </li>
+        <li>
+          <img height="360" width="240" src="static/posters/862.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="862">
+        </li>
+          <li>
+          <img height="360" width="240" src="static/posters/9286.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="9286">
+        </li>
+        <li>
+          <img height="360" width="240" src="static/posters/12259.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="12259">
+        </li>
+        <li>
+          <img height="360" width="240" src="static/posters/564.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="564">
+        </li>
+              <li>
+          <img height="360" width="240" src="static/posters/16535.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="16535">
+        </li>
+          <li>
+          <img height="360" width="240" src="static/posters/238.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="238">
+        </li>
+        <li>
+          <img height="360" width="240" src="static/posters/8966.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="8966">
+        </li>
+        <li>
+          <img height="360" width="240" src="static/posters/557.jpg" alt="Image 1">
+          <input type="checkbox" name="ids" value="557">
+        </li>
+      </ul>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+
 
 </body>
 
