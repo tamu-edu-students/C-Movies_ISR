@@ -1,0 +1,47 @@
+<style>
+    h2 {
+        color: white;
+    }
+
+    table {
+        border-collapse: collapse;
+        margin-top: 50px;
+        width: 100%;
+    }
+
+    td {
+        padding: 10px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 200px;
+        height: 300px;
+    }
+
+    .scrollable {
+        overflow: auto;
+    }
+</style>
+
+<div>
+
+    <div class="scrollable">
+        <table>
+            <tbody>
+                <tr>
+                    {% for row in items %}
+                    <td>
+                        <h2>{{ row.title }}</h2>
+                        <img src="{{ url_for('static', filename=row.poster) }}">
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
