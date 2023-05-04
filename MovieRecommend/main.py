@@ -10,14 +10,24 @@ import urllib.request
 import pickle
 import ssl
 import requests
+import time
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 from ranking import bm25_search
+import base64
+
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 ssl._create_default_https_context = ssl._create_unverified_context
 filename = 'nlp_model.pkl'
 clf = pickle.load(open(filename, 'rb'))
 vectorizer = pickle.load(open('tranform.pkl', 'rb'))
+
+UPLOAD_FOLDER = '/path/to/the/uploads'
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+
+stop_words = set(stopwords.words('english'))
 
 
 def create_similarity():
@@ -77,12 +87,119 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'ABCabc123$#@'
 app.config['MYSQL_DB'] = 'login_database'
-
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Intialize MySQL
 mysql = MySQL(app)
 
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    return response
+
+
+@app.route("/upload", methods=['POST'])
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        # print(request)
+        if 'file' not in request.files:
+            print('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            print('No selected file')
+            return redirect(request.url)
+        if file:
+            my_string = base64.b64encode(file.read())
+            # print(my_string)
+            hugging_face_url = "https://snehithb-get-image-context.hf.space/api/queue/push/"
+            hugging_face_status_url = "https://snehithb-get-image-context.hf.space/api/queue/status/"
+
+        #     Needs to be removed, added to test for 1 case
+        #     if index > 1:
+        #         continue
+            my_string = "data:image/jpeg;base64,"+my_string.decode("utf-8")
+            payload = json.dumps({
+                "fn_index": 0,
+                "data": [
+                    my_string
+                ],
+                "action": "predict",
+                "session_hash": "7p1oh5oyfh8"
+            })
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/111.0',
+                'Accept': '/',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Referer': 'https://snehithb-get-image-context.hf.space/?__theme=light',
+                'Content-Type': 'application/json',
+                'Origin': 'https://snehithb-get-image-context.hf.space',
+                'Connection': 'keep-alive',
+                'Cookie': 'session-space-cookie=acb1440f515e0f84f41ddb669ad094d1',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin',
+                'TE': 'trailers'
+            }
+            try:
+                response = requests.request(
+                    "POST", hugging_face_url, headers=headers, data=payload)
+            #     print(response.text["hash"])
+            #     payload = json.dumps({
+            #       response.text
+            #     })
+                temp = {}
+                while True:
+                    # average duration for hugging face to get the context of poster
+                    time.sleep(4)
+                    response1 = requests.request(
+                        "POST", hugging_face_status_url, headers=headers, data=response)
+
+        #             print(response1.text)
+                    temp = json.loads(response1.text)
+                #     print(temp)
+                    if temp['status'] == 'COMPLETE':
+                        break
+                print(temp['data']['data'][0])
+                cont = temp['data']['data'][0]
+
+                word_tokens = word_tokenize(cont)
+                # converts the words in word_tokens to lower case and then checks whether
+                # they are present in stop_words or not
+                filtered_sentence = [
+                    w for w in word_tokens if not w.lower() in stop_words]
+                # with no lower case conversion
+                filtered_sentence = []
+
+                for w in word_tokens:
+                    if w not in stop_words:
+                        filtered_sentence.append(w)
+
+                # print(word_tokens)
+                print(filtered_sentence)
+                sentence = " ".join(filtered_sentence)
+                bmResult = getTopRankedMovies(sentence)
+                bmResult = bmResult.head(10)[['title', 'id']]
+                movielist = []
+                for index, row in bmResult.iterrows():
+                    image_path = "posters/" + str(row['id'])+'.jpg'
+                    tempdict = {}
+                    tempdict['title'] = row['title']
+                    tempdict['poster'] = image_path
+                    movielist.append(tempdict)
+                return render_template('bmranktable.html', items=movielist)
+            except Exception as e:
+                print(e)
+
 # @app.route("/")
+
+
 @app.route("/home")
 def home():
     suggestions = get_suggestions()

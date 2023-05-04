@@ -59,6 +59,10 @@ function load_details(my_api_key, title) {
   });
 }
 
+function load_image_details(formData) {
+
+}
+
 // passing the movie name to get the similar movies from python's flask
 function movie_recs(movie_title, movie_id, my_api_key) {
   $.ajax({

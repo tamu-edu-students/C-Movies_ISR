@@ -58,16 +58,22 @@
         style="background-color: #e50914;text-align: center;border-color: #e50914;width:120px;"
         disabled="true">Enter</button><br><br>
     </div>
+    <form enctype="multipart/form-data" class="form-group upload-form" style="text-align: center;">
+      <input style="background-color: #e50914;text-align: center;border-color: #2609e5;width:240px;" type="file"
+        name="uploadFile" accept="image/jpeg image/png image/jpg" />
+      <br></br>
+      <input id="upload" type="submit" class="btn btn-primary btn-block movie-button"
+        style="background-color: #e50914;text-align: center;border-color: #e50914;width:120px;"></button><br><br>
+    </form>
+
   </div>
   </div>
 
   <div id="loader" class="text-center">
   </div>
 
-  <div class="fail">
+  <div id="failCase" class="fail">
     <center>
-      <h3>Sorry! The movie you requested is not in our database.
-        Please check the spelling or try with other movies!</h3>
     </center>
   </div>
 
@@ -82,6 +88,37 @@
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script type="text/javascript" src="{{url_for('static', filename='recommend.js')}}"></script>
+  <script>
+    const uploadForm = document.querySelector('.upload-form')
+    console.log(uploadForm)
+    const uploadButton = document.getElementById('upload')
+    uploadButton.addEventListener('click', function (e) {
+      console.log("check ")
+      e.preventDefault()
+      // let file = e.target.uploadFile.files[0]
+      let file = uploadForm.getElementsByTagName('input').uploadFile.files[0]
+      let formData = new FormData()
+      formData.append('file', file)
+      fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData
+      })
+        .then(resp => resp.text())
+        .then(data => {
+          if (data) {
+            document.getElementById('failCase').style.display = 'none'
+          }
+          console.log(data)
+          let content = document.createElement('template');
+          content.innerHTML = data;
+          // document.appendChild(content.content);
+          document.body.append(content.content)
+          // const parser = new DOMParser();
+          // document.getElementById('failCase') = parser.parseFromString(data, 'text/html');
+          // document.appendChild(htmlDoc)
+        })
+    })
+  </script>
 
 </body>
 
