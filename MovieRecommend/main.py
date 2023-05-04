@@ -326,25 +326,27 @@ def myfunction():
 
         user_id = str(account['id'])
         movieIds = request.form.getlist('ids')
-
+        print(movieIds)
 
         for movie_id in movieIds:
             movie_id = str(movie_id)
             query = "SELECT CREATED_AT FROM userpreference WHERE userID = %s AND movieID = %s"
             cursor.execute(query, (user_id, movie_id))
             result = cursor.fetchone()
-
+            print("result",result)
             if result:
                 # Rating exists, so delete it from the database
                 query = "DELETE FROM userpreference WHERE userID = %s AND movieID = %s"
                 cursor.execute(query, (user_id, movie_id))
-            else:
-                # Rating doesn't exist, so add it to the database
-                timestamp = datetime.now()
-                query = "INSERT INTO userpreference (userID, movieID, CREATED_AT) VALUES (%s, %s, %s)"
-                cursor.execute(query, (user_id, movie_id, timestamp))
+            # Rating doesn't exist, so add it to the database
+            timestamp = datetime.now()
+            query = "INSERT INTO userpreference (userID, movieID, CREATED_AT) VALUES (%s, %s, %s)"
+            cursor.execute(query, (user_id, movie_id, timestamp))
 
         suggestions = fetchRecords(user_id)
+        #suggestions = set(suggestions)
+        #suggestions = list(suggestions)
+
         print(suggestions)
         movielist = []
         for index in suggestions:
@@ -366,17 +368,18 @@ def fetchRecords(user_id):
     for i in result:
         i = str(i['movieID'])
         #search = "SELECT tmp.MovieID, tmp.Score FROM ( SELECT movieA as MovieID, score as Score FROM cosinescores WHERE movieB = %s UNION SELECT movieB as MovieID, score as Score FROM cosinescores WHERE movieA = %s ) AS tmp " \
-        "JOIN (SELECT MAX(score) as max_score FROM ( SELECT score FROM cosinescores WHERE movieA = %s OR movieB = %s ORDER BY score DESC LIMIT 5) AS max_scores) AS max_scores WHERE tmp.Score >= max_scores.max_score ORDER BY tmp.Score DESC LIMIT 5;"
-        search = "select tmp.MovieID, tmp.Score from (select movieA as MovieID, score as Score from cosinescores where movieB = %s union select movieB as MovieID, score as Score from cosinescores where movieA = %s ) tmp order by tmp.Score DESC LIMIT 5;"
-        cursor.execute(search, (i,i))
+        #"JOIN (SELECT MAX(score) as max_score FROM ( SELECT score FROM cosinescores WHERE movieA = %s OR movieB = %s ORDER BY score DESC LIMIT 5) AS max_scores) AS max_scores WHERE tmp.Score >= max_scores.max_score ORDER BY tmp.Score DESC LIMIT 5;"
+        #search = "select tmp.MovieID, tmp.Score from (select movieA as MovieID, score as Score from cosinescores where movieB = %s union select movieB as MovieID, score as Score from cosinescores where movieA = %s ) tmp order by tmp.Score DESC LIMIT 5;"
+        search = "select movieB, score from COSINESIMILARITIES where movieA = "+ i +" order by score DESC LIMIT 5;"
+        cursor.execute(search)
         print(i)
         movieIds = cursor.fetchall()
         print(movieIds)
-        listOfMovies.append(movieIds[0]['MovieID'])
-        listOfMovies.append(movieIds[1]['MovieID'])
-        listOfMovies.append(movieIds[2]['MovieID'])
-        listOfMovies.append(movieIds[3]['MovieID'])
-        listOfMovies.append(movieIds[4]['MovieID'])
+        listOfMovies.append(movieIds[0]['movieB'])
+        listOfMovies.append(movieIds[1]['movieB'])
+        listOfMovies.append(movieIds[2]['movieB'])
+        listOfMovies.append(movieIds[3]['movieB'])
+        listOfMovies.append(movieIds[4]['movieB'])
 
     print(listOfMovies)
     return listOfMovies
