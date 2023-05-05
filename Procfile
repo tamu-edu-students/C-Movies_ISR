@@ -1,1 +1,1 @@
-web: sh -c 'cd ./MovieRecommend/ && gunicorn run:main'
+web: sh -c 'cd ./MovieRecommend/ && gunicorn main:app'
