@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 
 <head>
@@ -28,9 +27,12 @@
 	font-family: 'Noto Sans JP', sans-serif;
 }
 .white-box {
-    background-color: white;
+    position: absolute;
+    background-color: #FFFFFF;
     color: black;
-    <!--other positioning attributes-->
+    width: 50px;
+    height: 50px;
+    padding: 20px;
 }
 </style>
 
