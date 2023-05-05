@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 import numpy as np
@@ -16,6 +17,9 @@ from flask_mysqldb import MySQL
 import MySQLdb.cursors
 from ranking import bm25_search
 import base64
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -190,12 +194,11 @@ def upload_file():
                 cont = temp['data']['data'][0]
 
                 word_tokens = word_tokenize(cont)
+                print(word_tokens)
                 # converts the words in word_tokens to lower case and then checks whether
                 # they are present in stop_words or not
-                filtered_sentence = [
-                    w for w in word_tokens if not w.lower() in stop_words]
+                filtered_sentence = [w for w in word_tokens if not w.lower() in stop_words]
                 # with no lower case conversion
-                filtered_sentence = []
 
                 for w in word_tokens:
                     if w not in stop_words:
@@ -215,6 +218,8 @@ def upload_file():
                     movielist.append(tempdict)
                 return render_template('bmranktable.html', items=movielist)
             except Exception as e:
+                return render_template('bm.html')
+                print("in exception")
                 print(e)
 
 
@@ -320,6 +325,18 @@ def profile():
     # User is not loggedin redirect to login page
     return redirect(url_for('login'))
 
+@app.route('/imageSearch')
+def imageSearch():
+    # Check if user is loggedin
+    if 'loggedin' in session:
+        # We need all the account info for the user so we can display it on the profile page
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE id = %s', (session['id'],))
+        account = cursor.fetchone()
+        # Show the profile page with account info
+        return render_template('imageSearch.html', username=account['username'], email=account['email'])
+    # User is not loggedin redirect to login page
+    return redirect(url_for('login'))
 
 @app.route("/bmrank", methods=["GET", "POST"])
 def personlisedRanking():

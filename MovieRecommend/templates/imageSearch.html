@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
+</head>
+
+<body id="content">
+    <button class="btn btn-primary btn-block movie-button"
+        style="background-color: #e50914;text-align: center;border-color: #e50914;width:120px; margin-left: 0%; opacity: 100;"
+        disabled="true"><a href="{{ url_for('logout') }}" style="color: white;">Log Out</a></button>
+    <div class="form-group shadow-textarea" style="margin-top: 30px;text-align: center;color: white;">
+      <h1> Upload Image to begin search</h1>
+    </div>
+
+    <form enctype="multipart/form-data" class="form-group upload-form" style="text-align: center;">
+      <input style="background-color: #e50914;text-align: center;border-color: #2609e5;width:240px;" type="file"
+        name="uploadFile" accept="image/jpeg image/png image/jpg" />
+      <br></br>
+      <input id="upload" type="submit" class="btn btn-primary btn-block movie-button"
+        style="background-color: #e50914;text-align: center;border-color: #e50914;width:120px;"></button><br><br>
+    </form>
+
+
+  <div id="loader" class="text-center">
+  </div>
+
+  <div id="failCase" class="fail">
+    <center>
+    </center>
+  </div>
+
+  <div class="results">
+    <center>
+      <h2 id="name" class="text-uppercase"></h2>
+    </center>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/js/autoComplete.min.js"></script>
+  <script type="text/javascript" src="{{url_for('static', filename='autocomplete.js')}}"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="{{url_for('static', filename='recommend.js')}}"></script>
+  <script>
+    const uploadForm = document.querySelector('.upload-form')
+    console.log(uploadForm)
+    const uploadButton = document.getElementById('upload')
+    uploadButton.addEventListener('click', function (e) {
+      console.log("check ")
+      e.preventDefault()
+      // let file = e.target.uploadFile.files[0]
+      let file = uploadForm.getElementsByTagName('input').uploadFile.files[0]
+      let formData = new FormData()
+      formData.append('file', file)
+      fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData
+      })
+        .then(resp => resp.text())
+        .then(data => {
+          if (data) {
+            document.getElementById('failCase').style.display = 'none'
+          }
+          console.log(data)
+          let content = document.createElement('template');
+          content.innerHTML = data;
+          // document.appendChild(content.content);
+          document.body.append(content.content)
+          // const parser = new DOMParser();
+          // document.getElementById('failCase') = parser.parseFromString(data, 'text/html');
+          // document.appendChild(htmlDoc)
+        })
+    })
+  </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/js/autoComplete.min.js"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='autocomplete.js')}}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</body>
