@@ -28,13 +28,12 @@
     position: absolute;
     background-color: #FFFFFF;
     color: black;
-    width: 70%;
-    height: 100%;
     padding: 20px;
     margin-top: 50px;
     padding-left: 20px;
     padding-right: 20px;
     margin-left: 140px;
+	  opacity:70%;
 }
   </style>
     
@@ -49,7 +48,8 @@
 	text-shadow: #000000 0px 0px 13px;
 }"> C-Movies</h1>
     </center>
- <div class = "white-box">
+ <div class = "white-box" style=" width: 70%;
+    height: 65%;">
     <h3>Movie Poster Recommendation System</h3>
     <p>Movie posters are an essential part of identifying a movie. They are attention grabbers and often the first thing that the audience associates with the movie and grabs the attention. The poster is a visual representation of the movie’s theme, the characters and the style of the movie. Building on this, in this project our main goal was to leverage the context of the poster and make it an integral part of a movie recommendation system. We developed a system to recommend movies based on features such as color and composition of the posters and extracting textual information describing the image. The suggestions cater to user preferences and the context of movies they currently enjoy.</p>
     <p>To accomplish this, we built 3 main features in our application- an initial recommendation based on poster selected my users, a text search that allows the user to input a query relating to the poster/movie that returns a list of 10 movies they might be interested in and an image search which on uploading an image, a list of 10 movies are returned with context similar to the input image. In the project, we used cosine similarity to calculate similarity, BM25 along with DESM to perform ranking and a neural network model to derive context from images.</p>
