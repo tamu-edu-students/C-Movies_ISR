@@ -91,11 +91,19 @@ app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'secret'
 
 # Enter your database connection details below
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
+# app.config['MYSQL_HOST'] = 'localhost'
+# app.config['MYSQL_USER'] = 'root'
 
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'cmovies'
+# app.config['MYSQL_PASSWORD'] = ''
+# app.config['MYSQL_DB'] = 'cmovies'
+
+# Server details
+# Enter your database connection details below 
+app.config['MYSQL_HOST'] = 'l6glqt8gsx37y4hs.cbetxkdyhwsb.us-east-1.rds.amazonaws.com'
+app.config['MYSQL_USER'] = 'ssywn7zet9hu6dyn'
+
+app.config['MYSQL_PASSWORD'] = 'nzyy6fz4hpj4xaow'
+app.config['MYSQL_DB'] = 'erexzc61xjvkgcjb'
 
 # app.config['MYSQL_PASSWORD'] = 'ABCabc123$#@'
 # app.config['MYSQL_DB'] = 'login_database'
