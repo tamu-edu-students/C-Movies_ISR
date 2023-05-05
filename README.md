@@ -17,17 +17,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-  <!-- Auto Complete -->
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/css/autoComplete.min.css">
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}">
-<style>
-  #content {
-	background-image: url("MovieRecommend/static/image.jpg");
-	background-color: #181818;
-	font-family: 'Noto Sans JP', sans-serif;
-}
-  </style>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='MovieRecommend/static/style.css') }}">
 </head>
   
 <body id="content" style="font-family: 'Noto Sans JP', sans-serif;">
