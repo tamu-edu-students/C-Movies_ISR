@@ -14,7 +14,7 @@ itsdangerous==2.0.1
 Jinja2==2.11.3
 joblib==1.2.0
 jsonschema==3.2.0
-lxml==4.6.3
+lxml
 macholib 
 MarkupSafe==1.1.1
 mysqlclient==2.1.1
