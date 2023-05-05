@@ -20,27 +20,19 @@
   <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@7.2.0/dist/css/autoComplete.min.css">
   <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}">
-<style>
-.content {
-	background-image: url("MovieRecommend/static/image.jpg");
+
+</head>
+  
+<body id="content" style="background-image: url("MovieRecommend/static/image.jpg");
 	background-color: #181818;
-	font-family: 'Noto Sans JP', sans-serif;
-}
-.white-box {
-    position: absolute;
+	font-family: 'Noto Sans JP', sans-serif;">
+ <div class="white-box" style=" position: absolute;
     background-color: #FFFFFF;
     color: black;
     width: 50px;
     height: 50px;
-    padding: 20px;
-}
-</style>
-
-</head>
-  
-<body id="content" style="font-family: 'Noto Sans JP', sans-serif;">
- <div class="white-box">
-    Content
+    padding: 20px;">
+    
 </div>
 </body>
 
