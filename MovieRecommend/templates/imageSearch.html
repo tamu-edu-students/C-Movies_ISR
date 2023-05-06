@@ -55,7 +55,7 @@
       let file = uploadForm.getElementsByTagName('input').uploadFile.files[0]
       let formData = new FormData()
       formData.append('file', file)
-      fetch('http://127.0.0.1:5000/upload', {
+      fetch('https://cmovies.herokuapp.com/upload', {
         method: 'POST',
         body: formData
       })
