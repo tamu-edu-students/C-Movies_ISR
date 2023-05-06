@@ -112,9 +112,19 @@ body {
   <div class="column">
     <div class="card">
       <h3>Proposed solution / methods used</h3>
-      <p>vit-gpt2-image-captioning for getting context, CLIPImageProcessor for getting visual embeddings and used those embeddings for cosine similarity for recommendations</p>
-      <img src="MovieRecommend/static/img1.jpg" />
-	    <p>BM25, DESM, TFIDF, Word2Vec</p>
+	    <ul>
+      <li>BM25: We employed the BM25 ranking algorithm, which is a variant of the TF-IDF (Term Frequency-Inverse Document Frequency) weighting scheme. BM25 helps in measuring the relevance of textual information extracted from movie posters and enables effective ranking of movies based on user preferences.</li>
+      <li>DESM (Deep Embedding Semantic Model): The DESM technique was utilized to enhance the recommendation system. DESM employs deep neural networks to learn semantic representations of textual content, enabling a more accurate understanding of the movie's context and capturing the relationship between movies.</li>
+      <li>TF-IDF (Term Frequency-Inverse Document Frequency): TF-IDF was employed to analyze and extract meaningful features from the textual information associated with movie posters. It helps in quantifying the importance of each word in the document, aiding in understanding the context and relevance of movies.</li>
+      <li>Word2Vec: Word2Vec, a popular word embedding model, was utilized to transform textual data into a numerical representation. This transformation allows for semantic understanding and similarity analysis between movie descriptions, enhancing the recommendation process.</li>
+      <li>ViT-GPT2-Image-Captioning: Visual Transformer (ViT) models combined with GPT-2 and image captioning techniques were used to obtain contextual information from movie posters. This approach captures visual cues and provides a deeper understanding of the visual content, allowing for more accurate recommendations.</li>
+      <li>CLIPImageProcessor: CLIPImageProcessor, which is based on Contrastive Language-Image Pretraining (CLIP), was employed to generate visual embeddings from movie posters. These embeddings capture the visual information and facilitate similarity comparisons between different movie posters.</li>
+   <img src="MovieRecommend/static/img1.jpg" />
+  	 </ul>
+    <p>In the recommendation process, we leveraged these techniques and models to calculate cosine similarity between textual and visual embeddings, aiding in the generation of personalized movie recommendations based on user preferences and the contextual similarity between movies.</p>
+    <p>By incorporating these diverse methods, our movie recommendation system can effectively analyze both textual and visual content, providing accurate and context-aware recommendations to users.</p>
+	    
+	   
     </div>
   </div>
   
