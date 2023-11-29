@@ -78,7 +78,7 @@
                         {% for row in items %}
                         <td>
                             <h2>{{ row.title }}</h2>
-                            <img src="{{ url_for('static', filename=row.poster) }}">
+                            <img src={{ row.poster }}>
                         </td>
                         {% endfor %}
                     </tr>

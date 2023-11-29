@@ -49,6 +49,36 @@ def getTopRankedMovies(userQuery):
     list = bm25_search(userQuery)
     return list
 
+def get_dict_for_poster():
+    movie_title_poster_dict = {}
+    data = pd.read_csv('datasets/DataWithPosters.csv')
+    for index, row in data.iterrows():
+        # print(index, row['title'], row['poster_path'])
+        if type(row['poster_path']) != str:
+            continue
+        movie_title_poster_dict[row['title']] = 'https://image.tmdb.org/t/p/w500'+ row['poster_path']
+    return movie_title_poster_dict
+
+def get_id_dict_for_poster():
+    movie_title_poster_dict = {}
+    data = pd.read_csv('datasets/DataWithPosters.csv')
+    for index, row in data.iterrows():
+        # print(index, row['id'], row['poster_path'])
+        if type(row['poster_path']) != str:
+            continue
+        movie_title_poster_dict[row['id']] = 'https://image.tmdb.org/t/p/w500'+ row['poster_path']
+    return movie_title_poster_dict
+
+def get_id_for_title():
+    movie_id_title_dict = {}
+    data = pd.read_csv('datasets/DataWithPosters.csv')
+    for index, row in data.iterrows():
+        # print(index, row['id'], row['poster_path'])
+        # if type(row['poster_path']) != str:
+        #     continue
+        movie_id_title_dict[row['id']] = row['title']
+    return movie_id_title_dict
+
 
 def rcmd(m):
     m = m.lower()
@@ -85,6 +115,18 @@ def get_suggestions():
     data = pd.read_csv('main_data.csv')
     return list(data['movie_title'].str.capitalize())
 
+
+movie_title_poster_dictionary = get_dict_for_poster()
+movie_id_poster_dictionary = get_id_dict_for_poster()
+get_id_for_title_dictionary = get_id_for_title()
+def get_path_by_title(movie_title):
+    return movie_title_poster_dictionary[movie_title]
+
+def get_path_by_id(index):
+    return movie_id_poster_dictionary[index]
+
+def get_title_by_id(index):
+    return get_id_for_title_dictionary[index]
 
 app = Flask(__name__, static_url_path='/static')
 # Change this to your secret key (can be anything, it's for extra protection)
@@ -222,7 +264,7 @@ def upload_file():
                     image_path = "posters/" + str(row['id'])+'.jpg'
                     tempdict = {}
                     tempdict['title'] = row['title']
-                    tempdict['poster'] = image_path
+                    tempdict['poster'] = get_path_by_id(row['id'])
                     movielist.append(tempdict)
                 return render_template('bmranktable.html', items=movielist)
             except Exception as e:
@@ -353,10 +395,10 @@ def personlisedRanking():
     bmResult = bmResult.head(10)[['title', 'id']]
     movielist = []
     for index, row in bmResult.iterrows():
-        image_path = "posters/" + str(row['id'])+'.jpg'
+        # image_path = "posters/" + str(row['id'])+'.jpg'
         tempdict = {}
         tempdict['title'] = row['title']
-        tempdict['poster'] = image_path
+        tempdict['poster'] = get_path_by_title(row['title'])
         movielist.append(tempdict)
     return render_template('bmrank.html', items=movielist)
 
@@ -497,8 +539,8 @@ def myfunction():
         for index in suggestions:
             image_path = "posters/" + str(index) + '.jpg'
             tempdict = {}
-            #tempdict['title'] = row['title']
-            tempdict['poster'] = image_path
+            tempdict['title'] = get_title_by_id(index)
+            tempdict['poster'] = get_path_by_id(index)
             movielist.append(tempdict)
         return render_template('suggestions.html', items=movielist)
 
